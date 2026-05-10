@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PlagDetect — Plagiarism Detection Engine</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Share+Tech+Mono&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:      #eef2ff;
+      --surface: #ffffff;
+      --blue:    #1a6fff;
+      --blue-dk: #0050c8;
+      --cyan:    #0099cc;
+      --text:    #0d1a3a;
+      --muted:   #5a6a8a;
+      --border:  #c8d4f0;
+      --mono:    'Share Tech Mono', monospace;
+      --display: 'Bebas Neue', sans-serif;
+      --sans:    'Inter', sans-serif;
+    }
+
+    html, body { width: 100%; height: 100%; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Subtle dot grid */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: radial-gradient(circle, rgba(26,111,255,0.12) 1px, transparent 1px);
+      background-size: 32px 32px;
+      pointer-events: none; z-index: 0;
+    }
+
+    /* Top blue bloom */
+    body::after {
+      content: '';
+      position: fixed;
+      top: -180px; left: 50%; transform: translateX(-50%);
+      width: 800px; height: 480px;
+      background: radial-gradient(ellipse, rgba(26,111,255,0.18) 0%, transparent 65%);
+      pointer-events: none; z-index: 0;
+    }
+
+    .container {
+      position: relative; z-index: 1;
+      display: flex; flex-direction: column;
+      align-items: center; text-align: center;
+      padding: 0 24px;
+    }
+
+    /* Logo */
+    .logo-img {
+      width: 108px; height: 108px;
+      border-radius: 50%;
+      box-shadow: 0 8px 36px rgba(26,111,255,0.4), 0 2px 8px rgba(26,111,255,0.2);
+      animation: floatLogo 4s ease-in-out infinite, fadeIn 0.5s ease both;
+      margin-bottom: 20px;
+    }
+    @keyframes floatLogo {
+      0%, 100% { transform: translateY(0px); }
+      50%       { transform: translateY(-10px); }
+    }
+
+    /* Title */
+    h1 {
+      font-family: var(--display);
+      font-size: clamp(4.5rem, 13vw, 7.5rem);
+      letter-spacing: 6px;
+      line-height: 1;
+      margin-bottom: 10px;
+      animation: fadeIn 0.5s 0.1s ease both;
+    }
+    h1 .plag   { color: var(--blue); }
+    h1 .detect { color: var(--text); }
+
+    /* Tagline */
+    .tagline {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 5px;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 28px;
+      display: flex; align-items: center; gap: 14px;
+      animation: fadeIn 0.5s 0.2s ease both;
+    }
+    .tagline::before, .tagline::after {
+      content: '';
+      width: 36px; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--blue));
+    }
+    .tagline::after { background: linear-gradient(90deg, var(--blue), transparent); }
+
+    /* Single compact badge */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1.5px solid rgba(26,111,255,0.35);
+      background: rgba(255,255,255,0.7);
+      backdrop-filter: blur(6px);
+      padding: 7px 18px 7px 14px;
+      margin-bottom: 36px;
+      animation: fadeIn 0.5s 0.3s ease both;
+    }
+    .badge-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--blue);
+      box-shadow: 0 0 6px rgba(26,111,255,0.6);
+      flex-shrink: 0;
+    }
+    .badge-text {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 3px;
+      color: var(--blue);
+      text-transform: uppercase;
+    }
+
+    /* CTA Button */
+    .btn {
+      padding: 15px 64px;
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      font-family: var(--mono);
+      font-size: 13px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      cursor: pointer;
+      font-weight: 700;
+      clip-path: polygon(12px 0%, 100% 0%, calc(100% - 12px) 100%, 0% 100%);
+      transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+      margin-bottom: 36px;
+      box-shadow: 0 4px 20px rgba(26,111,255,0.35);
+      animation: fadeIn 0.5s 0.4s ease both;
+    }
+    .btn:hover  { background: var(--blue-dk); box-shadow: 0 6px 32px rgba(26,111,255,0.5); }
+    .btn:active { transform: scale(0.98); }
+
+    /* Algorithm pills */
+    .features {
+      display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;
+      animation: fadeIn 0.5s 0.5s ease both;
+    }
+    .pill {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--blue);
+      border: 1px solid rgba(26,111,255,0.28);
+      padding: 5px 12px;
+      background: rgba(26,111,255,0.06);
+    }
+
+    /* Corner brackets */
+    .corner {
+      position: fixed;
+      width: 40px; height: 40px;
+      border-color: rgba(26,111,255,0.3);
+      border-style: solid;
+    }
+    .corner-tl { top: 22px; left: 22px; border-width: 2px 0 0 2px; }
+    .corner-tr { top: 22px; right: 22px; border-width: 2px 2px 0 0; }
+    .corner-bl { bottom: 22px; left: 22px; border-width: 0 0 2px 2px; }
+    .corner-br { bottom: 22px; right: 22px; border-width: 0 2px 2px 0; }
+
+    /* Footer */
+    .footer {
+      position: fixed; bottom: 18px;
+      font-family: var(--mono); font-size: 10px;
+      color: #a0b0cc; letter-spacing: 4px;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="corner corner-tl"></div>
+  <div class="corner corner-tr"></div>
+  <div class="corner corner-bl"></div>
+  <div class="corner corner-br"></div>
+
+  <div class="container">
+     <img src="logo.png" class="logo-img" alt="logo">
+    <h1><span class="plag">PLAG</span><span class="detect">DETECT</span></h1>
+    <div class="tagline">Plagiarism Detection Engine</div>
+
+    <div class="badge">
+      <div class="badge-dot"></div>
+      <span class="badge-text">5 Detection Algorithms</span>
+    </div>
+
+    <button class="btn" onclick="window.location.href='index.html'">⚡ Start Checking</button>
+
+    <div class="features">
+      <div class="pill">Naive Match</div>
+      <div class="pill">KMP</div>
+      <div class="pill">Rabin-Karp</div>
+      <div class="pill">Shingling</div>
+      <div class="pill">LCS</div>
+    </div>
+  </div>
+
+  <div class="footer">PLAGDETECT &nbsp;·&nbsp; C++ ENGINE</div>
+</body>
+</html>

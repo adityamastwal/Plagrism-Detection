@@ -23,3 +23,24 @@ Each algorithm in this project serves a specific purpose in the detection pipeli
 
       5. Naive String Matching: 
               Used as a baseline to compare the performance and optimization gains of the more advanced algorithms.
+
+
+              
+## ✨ Features
+- Upload file or paste text
+- Multi-algorithm similarity checking
+- Web source comparison
+- PDF report generation
+- No user data is stored
+
+## 🛠 Tech Stack
+- C++ (core algorithms)
+- Flask (backend)
+- HTML/CSS/JS (frontend)
+
+## ▶️ Run Locally
+```bash
+
+pip install flask
+python upload_handler.py
+
